@@ -494,7 +494,7 @@ export const MimetypeMap = {
     audioMessage: Mimetype.ogg,
     stickerMessage: Mimetype.webp,
 }
-export type WAParticipantAction = 'add' | 'remove' | 'promote' | 'demote'
+export type WAParticipantAction = 'add' | 'remove' | 'promote' | 'demote' | 'leave'
 export type BaileysEvent = 
     'open' | 
     'connecting' |
