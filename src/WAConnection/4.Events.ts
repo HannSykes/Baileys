@@ -576,8 +576,8 @@ export class WAConnection extends Base {
                 const jid = chat.jid
                 //let actor = whatsappID (message.participant)
                 let participants: string[]
-                const emitParticipantsUpdate = (action: WAParticipantAction) => (
-                    this.emitParticipantsUpdate(jid, participants, action, author)
+                const emitParticipantsUpdate = (action: WAParticipantAction, actor?: string) => (
+                    this.emitParticipantsUpdate(jid, participants, action, actor)
                 )
                 const emitGroupUpdate = (update: Partial<WAGroupMetadata>) => this.emitGroupUpdate(jid, update)
                 
