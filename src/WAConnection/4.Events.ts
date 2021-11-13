@@ -619,7 +619,8 @@ export class WAConnection extends Base {
                             delete chat.read_only
                             chatUpdate.read_only = 'false'
                         }
-                        emitParticipantsUpdate('add')
+			const stubType = message.messageStubType === 27 ? whatsappID(message.participant) : null;
+                        emitParticipantsUpdate('add', stubType)
                         break
                     case WA_MESSAGE_STUB_TYPE.GROUP_CHANGE_ANNOUNCE:
                         const announce = message.messageStubParameters[0] === 'on' ? 'true' : 'false'
