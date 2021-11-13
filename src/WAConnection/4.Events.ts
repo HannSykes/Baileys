@@ -217,7 +217,6 @@ export class WAConnection extends Base {
             const data = json[1].data
             if (data) {
                 const emitGroupParticipantsUpdate = (action: WAParticipantAction) => this.emitParticipantsUpdate(json[1].id, data[2].participants.map(whatsappID), action, data[1])
-                (json[1].id, data[2].participants.map(whatsappID), action)
                 const emitGroupUpdate = (data: Partial<WAGroupMetadata>) => this.emitGroupUpdate(json[1].id, data)
 
                 switch (data[0]) {
