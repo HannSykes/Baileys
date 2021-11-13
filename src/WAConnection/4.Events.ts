@@ -216,7 +216,7 @@ export class WAConnection extends Base {
         this.on('CB:Chat,cmd:action', json => {
             const data = json[1].data
             if (data) {
-                const emitGroupParticipantsUpdate = (action: WAParticipantAction) => this.emitParticipantsUpdate
+                const emitGroupParticipantsUpdate = (action: WAParticipantAction) => this.emitParticipantsUpdate(json[1].id, data[2].participants.map(whatsappID), action, data[1])
                 (json[1].id, data[2].participants.map(whatsappID), action)
                 const emitGroupUpdate = (data: Partial<WAGroupMetadata>) => this.emitGroupUpdate(json[1].id, data)
 
@@ -577,7 +577,7 @@ export class WAConnection extends Base {
                 //let actor = whatsappID (message.participant)
                 let participants: string[]
                 const emitParticipantsUpdate = (action: WAParticipantAction) => (
-                    this.emitParticipantsUpdate(jid, participants, action)
+                    this.emitParticipantsUpdate(jid, participants, action, author)
                 )
                 const emitGroupUpdate = (update: Partial<WAGroupMetadata>) => this.emitGroupUpdate(jid, update)
                 
@@ -595,9 +595,17 @@ export class WAConnection extends Base {
                         }
                         break
                     case WA_MESSAGE_STUB_TYPE.GROUP_PARTICIPANT_LEAVE:
+	  		participants = message.messageStubParameters.map (whatsappID)
+                        emitParticipantsUpdate('leave')
+
+			if (participants.includes(this.user.jid)) {
+                            chat.read_only = 'true'
+                            chatUpdate.read_only = 'true'
+                        }
+                        break;
                     case WA_MESSAGE_STUB_TYPE.GROUP_PARTICIPANT_REMOVE:
                         participants = message.messageStubParameters.map (whatsappID)
-                        emitParticipantsUpdate('remove')
+                        emitParticipantsUpdate('remove', whatsappID(message.participant))
                         // mark the chat read only if you left the group
                         if (participants.includes(this.user.jid)) {
                             chat.read_only = 'true'
@@ -634,9 +642,10 @@ export class WAConnection extends Base {
 
         this.emit('chat-update', chatUpdate)
     }
-    protected emitParticipantsUpdate = (jid: string, participants: string[], action: WAParticipantAction) => {
+    protected emitParticipantsUpdate = (jid: string, participants: string[], action: WAParticipantAction, Actor: string) => {
         const chat = this.chats.get(jid)
         const meta = chat?.metadata
+	const actor = Actor ? Actor : null
         if (meta) {
             switch (action) {
                 case 'add':
@@ -645,6 +654,7 @@ export class WAConnection extends Base {
                     ))
                     break
                 case 'remove':
+                case 'leave':
                     meta.participants = meta.participants.filter(p => !participants.includes(p.jid))
                     break
                 case 'promote':
@@ -656,7 +666,7 @@ export class WAConnection extends Base {
                     break
             }
         }
-        this.emit ('group-participants-update', { jid, participants, action })
+        this.emit ('group-participants-update', { jid, participants, action, actor })
     }
     protected emitGroupUpdate = (jid: string, update: Partial<WAGroupMetadata>) => {
         const chat = this.chats.get(jid)
